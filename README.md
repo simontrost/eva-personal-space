@@ -107,11 +107,107 @@ before changing packages or model sizes. Unity and all AI models share VRAM.
 The current server requires Whisper CUDA/FP16, Piper's CUDA provider and at
 least 99% Ollama GPU allocation. Allocation is not a utilization benchmark.
 
-For AMD, Intel or CPU-only systems, stop before installing the NVIDIA profile.
-There is no working compatibility profile in this repository. Supporting one
-would require a separate dependency profile, conditional CUDA setup, different
-Whisper/Piper settings, and matching Ollama, setup and preflight checks. That
-is a separate implementation task, not an existing setup option.
+**The four cases below are porting notes, not ready-to-use setup options.**
+There is currently no working AMD, macOS, Linux or CPU-only profile in this
+repository. The NVIDIA installation script deliberately rejects systems without
+an NVIDIA GPU. The backend and automatic launcher also contain Windows-only code.
+An AMD Ryzen CPU with a suitable NVIDIA GPU on Windows is not an AMD GPU case.
+
+#### 1. Windows with an AMD graphics card
+
+Whisper and Piper currently require NVIDIA/CUDA. Choose CPU execution or
+separately supported AMD backends, then adapt their settings and GPU checks in
+`Backend/server.py`. Change the dependency profile, skip NVIDIA DLL loading, and
+update installation and preflight checks. Changing the graphics driver alone
+does not provide this support. Ollama can use some AMD GPUs; check the exact
+model and operating system against its
+[hardware support list](https://docs.ollama.com/gpu).
+
+#### 2. macOS
+
+The Windows startup restriction, executable paths and process handling must be
+adapted in `Assets/_Project/Scripts/EVASystemLauncher.cs`. Replace Windows DLL
+loading and the Windows installation steps. Choose suitable Whisper/Piper
+execution backends and adjust the checks. Apple Silicon needs ARM64 packages;
+Intel Macs need packages for their own architecture. Ollama supports Apple GPU
+acceleration through Metal, but this does not make the speech pipeline portable.
+
+#### 3. Linux with an NVIDIA graphics card
+
+CUDA execution can generally remain if the GPU, driver and library versions
+are compatible. The main changes are Linux-compatible Python packages, shared
+library loading instead of Windows DLL setup, and Linux Python/Ollama paths
+and process handling in the launcher. Adapt or replace `setup_backend.ps1` and
+update preflight for the Linux environment. The current Windows-only guards
+must be changed before the backend and launcher can run.
+
+#### 4. Linux with an AMD graphics card
+
+Combine the Linux installation/startup changes with the AMD changes to Whisper,
+Piper and GPU validation in `Backend/server.py`. AMD acceleration depends on the
+exact GPU, driver, distribution and supported backend builds. CPU execution is
+another possible profile, but is currently disabled and needs implementation
+and performance testing.
+
+#### Files to focus on when porting
+
+| File | What needs attention |
+| --- | --- |
+| [Backend/requirements.txt](Backend/requirements.txt) | Define packages for the target OS, CPU architecture and execution backend. The existing pins describe the Windows/NVIDIA profile. |
+| [Backend/cuda_runtime.py](Backend/cuda_runtime.py) | Runs during server import and preflight. It rejects non-Windows systems and loads NVIDIA DLLs; make this conditional or replace it for another profile. |
+| [Backend/server.py](Backend/server.py) | Whisper device/compute type, Piper provider and loading, and strict GPU-only checks. Model names and Ollama context length are also defined here. |
+| [Backend/setup_backend.ps1](Backend/setup_backend.ps1) | NVIDIA checks, environment creation, package installation, Windows program discovery and model setup. Adapt or replace this flow for another platform. |
+| [Backend/verify_backend.py](Backend/verify_backend.py) | Check the chosen runtime/provider and hardware instead of always requiring CUDA/FP16. Keep model and package checks consistent with setup. |
+| [Assets/_Project/Scripts/EVASystemLauncher.cs](Assets/_Project/Scripts/EVASystemLauncher.cs) | For macOS/Linux: Windows guard, Python/Ollama executable discovery, process startup and shutdown. Startup timeouts are configured on the Unity component. |
+| [Backend/download_backend_models.py](Backend/download_backend_models.py) | Keep downloaded models consistent with runtime and preflight if changing model sizes. Voice file definitions are in [Backend/voice_config.py](Backend/voice_config.py). |
+
+#### Other things to check on every computer
+
+- **Versions and environment:** start with Unity **6000.3.12f1** and Python
+  **3.11**. Other versions can change package or import behaviour. Recreate
+  `.venv` on each target computer and after moving its location; do not copy it
+  between machines or platforms. See the
+  [Python environment documentation](https://docs.python.org/3.11/library/venv.html).
+- **Drivers and runtime libraries:** use matching driver, CUDA/cuDNN and ONNX
+  Runtime versions for the NVIDIA profile. Other profiles need their own
+  compatible stack. Do not install conflicting CPU/GPU ONNX Runtime packages
+  together in one environment.
+- **RAM, VRAM and speed:** Unity, speech models and Ollama run together. A
+  supported GPU may still have too little free VRAM. Smaller models or a shorter
+  context may help, but keep runtime, downloads, setup and verification in sync.
+  CPU-based profiles may respond more slowly and need measured testing.
+- **Complete downloads:** Git LFS must retrieve the actual avatar and texture
+  files. `Backend/models` and `Backend/voices` are not included in Git; setup
+  downloads them separately, and Ollama downloads its own model. Initial setup
+  needs internet access. Check offline operation only after all downloads finish.
+- **Startup and connections:** slower computers can take longer to warm up.
+  Check startup timeouts on `EVASystemLauncher` and read the first backend error
+  before increasing them. A leftover EVA backend or another application on
+  ports **8765** or **11434** can prevent startup. Stop only confirmed EVA
+  processes, not unrelated Python or Ollama applications.
+- **Microphone and playback:** check OS microphone permission and the selected
+  input/output devices, including headset devices. Test a real recording and
+  complete playback; text output alone does not prove audio works. Long replies
+  can exceed the scene's 60-second queued-audio limit.
+- **VR:** validate desktop operation first. The current workflow is Meta Quest
+  PC VR on Windows. Headset/runtime support, OpenXR, controllers, panel placement
+  and audio need separate checks on each platform. Desktop operation does not
+  prove VR support, and this is not a standalone Quest application.
+
+#### Working together and validating a port
+
+A shared project revision, OS and software versions make setup and debugging
+easier. Matching or similar graphics hardware, ideally the same GPU model when
+practical, also makes results easier to compare. Different hardware is possible,
+but porting takes extra coordination and testing. Work with people who are
+willing to test their own hardware and reproduce problems together.
+
+Record the project revision, OS, CPU, GPU, RAM/VRAM, driver and software versions
+for each test machine. Require successful preflight, clean Unity compilation,
+startup/loading/menu operation, real speech input, both selected languages and
+all four voices, complete playback, interruption and lip-sync. Repeat start/stop
+and check offline use. Test VR separately. These ports are not validated by
+changing requirements or passing package-import checks alone.
 
 ## Start Unity
 
