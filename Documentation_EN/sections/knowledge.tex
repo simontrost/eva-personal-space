@@ -1,0 +1,144 @@
+\section{Knowledge gained}
+\subsection{How EVA works now}
+EVA is a local voice application with one visible character in Unity. After
+loading, the user chooses a design, body-animation style, language and voice.
+The six designs share the same conversation system. Extra scene hosts, if
+present, are disabled during Play; three visible agents are not required.
+
+The \textbf{backend} is the Python program behind Unity. A \textbf{WebSocket}
+is the local connection carrying recordings, text, audio and mouth timings.
+The \textbf{GPU} is the graphics card; it runs the models and draws the scene.
+
+\begin{figure}[ht]
+\centering
+\begingroup\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{0.96\linewidth}{@{}P{7mm}Y@{}}
+\toprule
+1 & \textbf{Unity records speech} while B or the VR recording button is held.\\
+2 & \textbf{Python receives the recording} with the selected language and voice profile.\\
+3 & \textbf{Faster-Whisper creates text} using the selected language explicitly.\\
+4 & \textbf{Ollama runs Llama 3.2} with a language instruction for this answer.\\
+5 & \textbf{Piper creates speech and timings} with the selected matching voice.\\
+6 & \textbf{Unity plays audio and animates EVA}, including mouth shapes and body states.\\
+\bottomrule
+\end{tabularx}
+\endgroup
+\caption{The current path from a question to a spoken answer.}
+\label{fig:pipeline}
+\end{figure}
+
+Unity sends small audio pieces while the recording button is held. Whisper
+returns provisional text, which may correct recent words. Releasing the button
+finishes recognition and starts the answer. Answer text and audio arrive in
+small pieces, so playback can begin before the whole answer is ready. Both text
+boxes reveal complete words. Desktop text starts hidden and can be shown with T;
+VR text starts visible and can be shown or hidden with left X.
+
+\subsection{Tools and reasons for using them}
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}P{33mm}Y@{}}
+\toprule
+Tool & Job and reason\\
+\midrule
+Unity and C\# & Character display, microphone capture, menu, desktop/VR controls,
+animation, audio and text boxes in one application.\\
+Python & Connects the speech tools, manages conversation steps and sends results to Unity.\\
+Faster-Whisper / CTranslate2 & Local speech recognition. Whisper Small runs on
+CUDA with FP16 to use the NVIDIA card.\\
+Ollama / Llama 3.2 3B & Ollama loads the local language model; Llama writes
+answers. The 3B model limits memory use compared with larger models.\\
+Piper / ONNX Runtime & Local English/German speech. ONNX Runtime runs the voice
+models on CUDA; Piper's phoneme timings support lip-sync.\\
+Microsoft Rocketbox & Existing rigged avatars, body animations and facial shapes,
+including the 15 visemes used by EVA.\\
+Input System / NativeWebSocket & Input handling and the persistent Unity--Python connection.\\
+OpenXR / Quest Link & PC VR with Meta Quest 3 while Unity and models run on Windows.\\
+\bottomrule
+\end{tabularx}}
+These choices support the current pipeline. Official tool links are in Appendix B.
+
+\subsection{Menu, language and voice}
+The menu provides six character designs and three body styles: Neutral,
+Friendly and Expressive. The styles change body animation, not the language
+model's personality. The states remain Idle, Listening, Thinking and Speaking.
+
+\textbf{03 LANGUAGE fixes the whole turn.} English/Deutsch is sent to Whisper,
+the answer instruction and the voice selector. There is no automatic language
+detection or switching. Speak in the selected language and reopen settings
+with M, or right B in VR, to change it while idle.
+
+\textbf{04 VOICE is independent of the design.} English offers Kristin/female
+and Mike/male; German offers Ramona/female and Thorsten/male. Clicking a name
+selects it. Its small play icon only previews that voice. Loading and stop
+symbols replace the play icon while needed. Preview audio uses a separate
+AudioSource, does not alter the conversation and does not animate the mouth.
+It stops on language/voice changes, conversation start or menu closure.
+
+\subsection{VR interface and controls}
+In VR, screen panels close to the eyes were hard to read at the edges of the
+view. The interface now uses \textbf{World Space}: the menu sits beside EVA,
+conversation text sits below the face, and loading appears in front of the user.
+The surfaces are usually about 2--3 m away. They keep their position in the scene
+when the user turns their head, so they can be viewed by looking towards EVA.
+
+Use the right stick and A to select menu controls. Right B opens settings while
+idle or closes the menu with Start/Continue. During conversation, hold right A
+to record and release it to send. Release A after confirming a menu choice first.
+The left stick moves and the right stick snap-turns by 30 degrees. Left X toggles
+conversation text; left Y repositions the surfaces from the current position.
+Opening the menu also repositions it. Head tracking remains active during menus,
+while recording and walking stay blocked until loading and selection finish.
+
+Distance, width and offsets can be changed in
+\file{Assets/_Project/Resources/EVAControlSettings.asset}, under
+\menu{VR panels (metres)}. Press Y after changing values during Play. Save the
+asset outside Play to keep changes. Desktop layout and VR text visibility are
+stored separately. Check readability in both eyes and while standing or seated.
+
+\subsection{Problems encountered and lessons learned}
+{\footnotesize
+\begin{longtable}{@{}P{27mm}P{51mm}P{61mm}@{}}
+\toprule
+Area & What went wrong & Current solution or lesson\\
+\midrule
+\endhead
+GPU dependencies & A CUDA DLL was missing; a CPU-only ONNX package also replaced
+the GPU runtime. & Pin the NVIDIA packages, protect the GPU runtime in setup and
+use the shared DLL configuration in \file{cuda_runtime.py}. Run preflight.\\
+PC transfer & A copied environment pointed to the previous PC's Python and
+exited with code 103. & Install Python 3.11 x64 locally and recreate only
+\file{.venv}. Existing models and voices can stay.\\
+Language choice & Automatic recognition, answer language and voice could
+disagree. & Use one explicit menu language for all three stages. Piper itself
+does not detect a text's language.\\
+Complete playback & Speech ended early or filled the queue. & Wait for audio
+playback to finish. The remaining 60-second queue limit is documented separately.\\
+Lip-sync & The wrong face mesh had no visemes; mouth motion was too strong.
+& Update face references when changing design and keep the scene's maximum
+viseme weight at 50\%.\\
+Voice vocabulary & Ramona's older model lacks some symbols produced by newer
+eSpeak. & \file{piper_compat.py} filters unsupported phonemes before model input
+and alignment. A regression test checks supported input is preserved.\\
+Rig and turning & Bone axes differ; full-body turns could move EVA away.
+& Keep import-time bone fixes, calibrated head axes and leg-only turn animation.\\
+Server lifecycle & An old backend could remain after a script reload and fail
+new connections. & Clean up owned process trees on disable/reload; wait for
+\file{server.ready} and retain server tracebacks.\\
+Preview UI & A new play icon lacked a CanvasRenderer and failed during raycasts.
+& Require the component and add it explicitly before creating the icon.
+Both creation paths and all icon states passed an isolated Unity test.\\
+\bottomrule
+\end{longtable}}
+
+\subsection{Lip-sync and warm-up}
+A \textbf{phoneme} is a speech sound; a \textbf{viseme} is a visible mouth shape.
+Rocketbox provides 14 speech groups plus silence. Piper supplies phoneme timings,
+Python maps them to these shapes, and Unity blends them against the audio clock.
+No new lip-sync model was trained.
+
+Warm-up prepares the first model calls: Whisper processes silence, Ollama writes
+a short reply and the four Piper voices synthesize sample text. This loads model
+resources and checks GPU execution; it does not train or fine-tune the models.
+Input stays blocked until startup and the selection step are complete.
+

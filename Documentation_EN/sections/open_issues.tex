@@ -1,0 +1,51 @@
+\section{Open issues}
+This section lists current limits and checks still needed. The copied-environment
+failure, fixed-language selection, stale-process cleanup and missing preview
+renderer have implemented fixes; they are not unfinished features.
+
+\subsection{Current limits}
+\smalltitle{Long answers can exceed the audio queue}
+The saved scene buffers at most 60 seconds of queued audio. An incoming piece that would exceed the limit is skipped with an
+error. Python does not yet slow down to match playback. A long answer can therefore
+lose audio even though normal short answers play fully.
+
+\smalltitle{Connection loss after startup needs a restart}
+The launcher retries during startup and waits for \file{server.ready}. After
+startup there is no continuous reconnect process or full health check of every
+model service. If the connection is lost, fix the cause, stop Play and start it
+again. Check the Console and \file{Backend/backend-runtime.log}.
+
+\smalltitle{Recognition and answer quality need real-user tests}
+Language is fixed by the menu, so the user must speak that language. This removes
+automatic switching but does not prevent misheard words. The synthetic German
+test produced transcription errors. Real microphone recordings, accents, noise,
+silence and short questions still need systematic checks.
+
+The 3B language model can misunderstand or invent facts. It has not been
+fine-tuned for EVA. There is no hard output-token limit or reliable short-answer
+target. A language instruction is also not a separate check of the generated text.
+
+\smalltitle{VR and shared graphics memory}
+Unity rendering, recognition, four speech models and the answer model share one
+GPU. A laptop with less graphics memory may have less possibilities. Test actual
+memory use, first-audio delay and frame rate. Desktop movement keeps a fixed
+camera height and has no collision-based walking.
+
+VR uses PC OpenXR through Quest Link/Air Link. It needs the correct runtime,
+headset microphone and sound output. It is not a standalone Android/Quest app.
+The menu supports controller navigation, but the complete current flow still
+needs a real-headset acceptance run.
+
+\subsection{Manual acceptance checks still needed}
+\begin{enumerate}
+\item \textbf{Start/stop and reload:} repeat at least five times, including while
+loading or speaking. Check owned-process cleanup and readiness/input gating.
+\item \textbf{Menu and previews:} try designs, styles, both languages and voices.
+Preview the unselected voice without changing the choice; cancel while loading,
+switch voices and start a conversation. No old preview should start later.
+\item \textbf{Real conversation:} speak in each selected language with a real
+microphone. Check transcript accuracy, answer quality, voice, complete playback,
+lip-sync, interruption and text-box controls.
+\end{enumerate}
+The automated checks described in Section 2 support the backend and source
+changes. They do not replace these UI, microphone and headset checks.

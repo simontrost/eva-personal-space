@@ -1,0 +1,131 @@
+% Shared by the report and standalone two-page guide.
+\newgeometry{top=20mm,bottom=20mm,left=22mm,right=22mm}
+\begingroup
+\fontsize{10}{12.2}\selectfont
+\setlength{\parskip}{4pt}
+\section{Cheat sheet}
+\textbf{Page 1 of 2: set up EVA.} EVA is a local character you can talk to in
+Unity. Choose English or German before speaking. Installation needs Internet;
+the downloaded speech and answer models run on your PC.
+
+\smalltitle{What you need}
+\begin{tabularx}{\linewidth}{@{}P{29mm}Y@{}}
+\toprule
+Software & Windows x64, Python \textbf{3.11 x64}, Unity \textbf{6000.3.12f1},
+Unity Hub, Git with Git LFS, and Ollama.\\
+Graphics card & An NVIDIA card with CUDA and FP16 support and a suitable driver.
+This version cannot run on the CPU alone.\\
+Previous PCs & Desktop: RTX 5070 Ti, 16 GB graphics memory, Ryzen 7 9700X,
+32 GB RAM. Laptop: RTX 5070 Laptop GPU with about 8 GB graphics memory.\\
+Suggested PC & Estimate: a recent 6-core CPU, 16 GB RAM (32 GB recommended),
+an NVIDIA RTX GPU with 8 GB graphics memory (12--16 GB recommended), and an SSD.\\
+Space and limits & Start with at least 12 GB free for backend setup. Unity,
+assets and the import cache need extra space. These are estimates, not measured
+minimum requirements. Run the project checks on the actual PC.\\
+\bottomrule
+\end{tabularx}
+
+\smalltitle{1. Copy the project and install the software}
+Keep \file{Assets}, \file{Packages}, \file{ProjectSettings}, \file{Backend}
+and the project instructions. Create a new \file{Backend/.venv}
+and let Unity create a new \file{Library}. Keep existing models and voices.
+A copied Python environment may cause \textit{No Python at} / exit code 103.
+
+Open PowerShell in \textbf{Backend}:
+\begin{lstlisting}[caption={Check the PC and install the backend},label={code:setup}]
+Set-ExecutionPolicy -Scope Process Bypass
+.\hardware_report.ps1
+# Read hardware-report.json. Check the GPU first.
+.\setup_backend.ps1 -RecreateEnvironment -InstallOllama
+\end{lstlisting}
+The NVIDIA setup creates a Python environment, installs the pinned packages and
+checks or downloads Whisper Small, Llama 3.2 3B and all four Piper voices.
+It supplies CUDA runtime libraries; a full CUDA developer toolkit is normally
+unnecessary. Appendix A of the full report lists the package versions.
+
+\smalltitle{2. Check the backend}
+\begin{lstlisting}[caption={Run the setup check},label={code:check}]
+.\.venv\Scripts\python.exe verify_backend.py
+\end{lstlisting}
+The last line must say:
+\begin{lstlisting}
+[EVA Check] SUCCESS: The local GPU backend is ready.
+\end{lstlisting}
+For missing Microsoft runtime DLLs, install the Visual C++ x64 Redistributable.
+See the \href{https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html}{ONNX Runtime requirements}.
+
+\smalltitle{3. Open Unity}
+Use Unity \textbf{6000.3.12f1} (recommended). Newer versions may work but are
+untested. Open \file{Assets/_Project/Scenes/Main.unity}, wait for import and
+fix compiler errors before Play. This is also the configured build scene.
+The launcher starts or reuses Ollama and Python. Normal installations need no
+manual path overrides or extra PowerShell server windows.
+
+\clearpage
+\continued{Cheat sheet --- page 2 of 2: choose, talk and test}
+\smalltitle{Choose your EVA after loading}
+Press Play and wait for loading. Input stays blocked until the backend sends
+its readiness message. Then use the selection menu:
+\begin{enumerate}[itemsep=1pt,topsep=2pt]
+\item \textbf{01 CHARACTER:} choose one of six designs. Only one EVA is visible.
+\item \textbf{02 BEHAVIOUR:} choose Neutral, Friendly or Expressive body animations.
+\item \textbf{03 LANGUAGE:} choose English or Deutsch. This fixes recognition,
+answer text and speech to that language. There is no automatic language switching.
+\item \textbf{04 VOICE:} click a name to select it, independently of the design.
+The small play icon previews that voice without selecting it; click again to stop.
+\end{enumerate}
+Select \textbf{Start conversation}. Confirmed choices are saved locally, with a
+separate voice choice per language. A preview stops before conversation starts.
+
+\begin{tabularx}{\linewidth}{@{}P{27mm}Y Y@{}}
+\toprule
+Voice & English & German\\
+\midrule
+Female & Kristin, 22,050 Hz & Ramona, 16,000 Hz\\
+Male & Mike, 22,050 Hz & Thorsten-high, 22,050 Hz\\
+\bottomrule
+\end{tabularx}
+Hz is the audio sample rate: samples of the sound wave per second. For example,
+16,000 Hz means 16,000 samples per second. Unity uses the supplied rate so speech
+plays at the correct speed and pitch.
+
+\smalltitle{Desktop controls}
+Before Play, choose \menu{EVA > Controls > Desktop (WASD + Mouse)}.
+After starting conversation, click empty Game-view space to capture the mouse.
+\textbf{WASD}: move; \textbf{mouse}: look; \textbf{Shift}: move faster;
+\textbf{Esc}: release the mouse. Hold \textbf{B} to speak, then release to send.
+A new recording interrupts the old answer. Press \textbf{M} to reopen settings
+when EVA is idle. Change language there before speaking another language.
+
+Text boxes start hidden. Press \textbf{T} to show/hide the recognized question
+and EVA's answer. Both reveal words as you speak or EVA generates a reply.
+With the mouse released, use their move and resize handles.
+
+\smalltitle{Meta Quest 3 controls}
+Start Quest Link or Air Link first; choose \menu{EVA > Controls > VR (Meta Quest)}.
+In the menu, use the \textbf{right stick} and \textbf{A} to navigate/confirm.
+Right \textbf{B} opens settings while idle or closes the menu with Start/Continue.
+During conversation, left stick moves; right stick snap-turns by 30 degrees.
+Hold right \textbf{A} to record and release to send; release the menu confirmation
+press first. Left \textbf{X} shows/hides text; left \textbf{Y} repositions the surfaces.
+Menu and text sit near EVA, about 2--3 m away, and stay in the scene when you turn
+your head. In VR, text starts visible. Adjust size/distance in
+\file{Assets/_Project/Resources/EVAControlSettings.asset}, under
+\menu{VR panels (metres)}. Unity and Python run on the PC, not the headset.
+
+\smalltitle{Quick checks and fixes}
+Try both menu languages and both voices in each. Listen to previews and complete
+answers; check lip-sync, styles, gaze, text boxes and interrupting speech.
+Repeat with the real microphone and headset before a demo.
+
+\textbf{CUDA/DLL error:} rerun setup with the project Python; do not mix CPU and
+GPU ONNX Runtime packages.
+
+\textbf{No connection:} read \file{Backend/backend-runtime.log} and the Console.
+Stop Play, fix the cause and restart. For exit 103, recreate the environment.
+
+\textbf{VR closes:} start Quest Link first and fully restart Unity.
+
+\textbf{Missing speech:} long answers can exceed the scene's 60-second audio queue.
+\endgroup
+\restoregeometry

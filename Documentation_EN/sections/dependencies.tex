@@ -1,0 +1,43 @@
+\section{Package versions and model settings}
+\begingroup\fontsize{9.5}{11.5}\selectfont\raggedright
+\textbf{Install with the setup script.} It reads \file{Backend/requirements.txt}
+and protects the GPU ONNX Runtime from being replaced by the CPU package.
+
+\begin{multicols}{2}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,frame=none,backgroundcolor=\color{white},caption={Current pinned Python packages}]{reference/requirements-pins.txt}
+\end{multicols}
+
+\smalltitle{Unity packages used by EVA}
+\begin{tabularx}{\linewidth}{@{}P{49mm}Y@{}}
+\toprule
+Package & Version\\
+\midrule
+Unity editor & 6000.3.12f1\\
+Universal Render Pipeline & 17.3.0\\
+Input System / uGUI & 1.19.0 / 2.0.0\\
+XR Management / OpenXR & 4.5.3 / 1.16.1\\
+NativeWebSocket & Git package, branch \file{upm-2}\\
+Saved Git revision & \file{c612a4fef60f2ae57614b73202d2d261ba56aa3e}\\
+\bottomrule
+\end{tabularx}
+Keep \file{Packages/manifest.json} and \file{Packages/packages-lock.json} together.
+
+\smalltitle{Model and voice settings}
+\begin{itemize}
+\item \textbf{Recognition:} Whisper \file{small} from
+\file{Systran/faster-whisper-small}; CTranslate2, CUDA device 0, FP16.
+The menu's \file{en} or \file{de} is passed explicitly. Automatic language
+detection is disabled.
+\item \textbf{Answers:} local Ollama model \file{llama3.2:3b}, 4,096-token
+context. The server requires at least 99\% reported GPU allocation.
+\file{ollama==0.6.2} is the Python client version, not the desktop application version.
+\item \textbf{Female voices:} \file{en_US-kristin-medium} and \file{de_DE-ramona-low}.\\
+\textbf{Male voices:} \file{en_US-mike-medium} and \file{de_DE-thorsten-high}.\\
+Each needs its \file{.onnx} model and \file{.onnx.json} configuration.
+Downloads come from \file{rhasspy/piper-voices}; menu choices select the profile.
+\end{itemize}
+ONNX is a model file format; ONNX Runtime is the software that runs it.
+CUDA/cuDNN libraries are installed as Python packages. A suitable NVIDIA driver
+is still required. The shared \file{cuda_runtime.py} prepares DLL paths for
+both server and preflight. No extra Python dependency was added by this cleanup.
+\endgroup

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e7d9bd4db71874d9d981e7f8b128bc, type: 3}
+  m_Name: EVATurnAnimations
+  m_EditorClassIdentifier: Assembly-CSharp::EVATurnAnimationLibrary
+  femaleLeft: {fileID: 7400000, guid: 6deb152e810f55240acb31235865ad12, type: 2}
+  femaleRight: {fileID: 7400000, guid: e67b7328478cc1c4dbbdf3f0c3df52fd, type: 2}
+  maleLeft: {fileID: 7400000, guid: 5e8f204806fd29a49adf56f82f0cae90, type: 2}
+  maleRight: {fileID: 7400000, guid: 11cfdb24f33b41d4ba77194bbfec2717, type: 2}

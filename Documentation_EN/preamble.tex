@@ -1,0 +1,37 @@
+% Settings for the original Overleaf Technical Document Template.
+% Its class supplies the Roboto fonts and title-page commands.
+\usepackage[english]{babel}
+\usepackage{graphicx,microtype}
+\usepackage[a4paper,top=30mm,bottom=27mm,left=28mm,right=28mm]{geometry}
+\usepackage{xcolor}
+\usepackage{array,booktabs,tabularx,longtable}
+\usepackage{enumitem,listings,multicol}
+\PassOptionsToPackage{obeyspaces}{url}
+\usepackage{hyperref}
+\definecolor{navy}{HTML}{222222}
+\definecolor{teal}{HTML}{004A0E}
+\definecolor{light}{HTML}{F4F5F4}
+\definecolor{muted}{HTML}{555555}
+\hypersetup{pdftitle={EVA - Project Documentation in Simple English},
+  pdfauthor={Daniel},pdfsubject={Setup, tools, lessons and open issues}}
+\setcounter{tocdepth}{1}
+\AtBeginDocument{\fontsize{11}{14}\selectfont}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\setlist[itemize]{leftmargin=*,itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=*,itemsep=3pt,topsep=4pt,parsep=0pt}
+\lstset{basicstyle=\ttfamily\footnotesize,backgroundcolor=\color{light},
+  frame=single,rulecolor=\color{light},breaklines=true,breakatwhitespace=false,
+  columns=fullflexible,keepspaces=true,showstringspaces=false,
+  aboveskip=5pt,belowskip=7pt,framesep=4pt,upquote=true,captionpos=b}
+\renewcommand{\lstlistlistingname}{Code examples}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\file}[1]{\path{#1}}
+\newcommand{\menu}[1]{\textsf{#1}}
+\newcommand{\smalltitle}[1]{\par\medskip\textbf{#1}\par\nobreak\smallskip\nobreak}
+\newcommand{\note}[1]{\begingroup\setlength{\fboxsep}{7pt}\noindent
+  \colorbox{light}{\parbox{\dimexpr\linewidth-14pt\relax}{#1}}\endgroup\par}
+\newcommand{\continued}[1]{\textit{#1}\par}
+\newcommand{\refsource}[1]{\textcolor{muted}{\small [#1]}}
+\emergencystretch=3em

@@ -1,0 +1,14 @@
+{
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.autoBuild.run": "never",
+  "latex-workshop.latex.tools": [
+    {
+      "name": "pdflatex-eva",
+      "command": "pdflatex",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "-halt-on-error", "-file-line-error", "-output-directory=%OUTDIR%", "%DOC%"]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {"name": "pdfLaTeX (twice)", "tools": ["pdflatex-eva", "pdflatex-eva"]}
+  ]
+}

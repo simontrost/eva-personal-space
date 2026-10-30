@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: EVA_FriendlyRelaxed
+  m_Controller: {fileID: 9100000, guid: 6466a91a10c9a7341a902761b96d3519, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 1827226128182048838, guid: bd6e69ff85b87b44daae68d24470709e, type: 3}
+    m_OverrideClip: {fileID: 1827226128182048838, guid: 732483323ccdf0d4ebc37f899f30c8de, type: 3}
+  - m_OriginalClip: {fileID: 1827226128182048838, guid: 145c584a9c0a6b247a52f9337d20c297, type: 3}
+    m_OverrideClip: {fileID: 1827226128182048838, guid: 734044cda854b1d4d9bd9a20135ee07b, type: 3}
+  - m_OriginalClip: {fileID: 1827226128182048838, guid: 9cf5917f0b220c54e97b7a1efe484fe7, type: 3}
+    m_OverrideClip: {fileID: 1827226128182048838, guid: 06ff60498edffca4aa01936f93f5fda9, type: 3}

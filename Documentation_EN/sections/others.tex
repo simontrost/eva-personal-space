@@ -1,0 +1,52 @@
+\section{Others: project and maintenance notes}
+\subsection{Important files}
+Paths start at the project root. Keep the complete prepared backend folder when
+copying or packaging the application.
+
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}P{62mm}Y@{}}
+\toprule
+File or folder & Purpose\\
+\midrule
+\file{README.md}, \file{Backend/BACKEND_SETUP.md} & Current usage,
+handover instructions and backend setup.\\
+\file{Backend/server.py} & The single speech/conversation server entry point.\\
+\file{Backend/cuda_runtime.py} & Shared NVIDIA DLL setup for server and preflight.\\
+\file{Backend/voice_config.py}, \file{Backend/piper_compat.py} & Four voice models
+and the phoneme-vocabulary compatibility fix.\\
+\file{Backend/setup_backend.ps1}, \file{Backend/verify_backend.py} & Environment,
+package/model installation and GPU checks.\\
+\file{Assets/_Project/Scripts/} & Runtime code for menu, preview icons, loading,
+input, audio, text, character animation and VR.\\
+\file{Assets/Editor/}, \file{Assets/_Project/Editor/} & Avatar import, rig/VR setup
+and validation. Keep these for correct asset reimport on another PC.\\
+\file{Assets/_Project/Scenes/Main.unity} & Saved application scene and build target.\\
+\file{Assets/_Project/Resources/EVAControlSettings.asset} & Desktop/VR mode and
+VR panel distance, sizes, offsets and default text visibility.\\
+\file{Packages/manifest.json}, \file{Packages/packages-lock.json} & Unity package
+requirements and resolved versions.\\
+\bottomrule
+\end{tabularx}}
+
+\subsection{Testing and troubleshooting}
+\file{verify_backend.py} checks packages, CUDA and model files. The 14 checks
+in \file{test_response_language.py}, \file{test_voice_preview.py} and
+\file{test_streaming_transcription.py} use simulated models and do not record
+audio. Run \file{test_voice_profiles.py} outside Play
+for real voice synthesis and reusable test WAVs. It also exercises Ramona's
+phoneme compatibility fix.
+
+With the backend already ready, \file{test_live_voice_preview.py} checks all four
+short previews, cached results, audio formats and signal. Then
+\file{test_live_voice_profiles.py} uses the generated WAVs to check the complete
+Whisper/Ollama/Piper path. These clients use their own connections and do not
+play test audio through Unity.
+
+Unity's \menu{EVA > Interface > Validate Selection Menu} checks references in
+Edit mode. In Play, with the menu open, it checks all 72 design/style/language/voice
+combinations, recording gates and both preview renderers. Stop a running preview
+before this check. Other retained appearance/gaze tools remain under
+\menu{EVA > Appearance}, \menu{EVA > Gaze} and \menu{EVA > Diagnostics}.
+
+Errors: \file{Backend/backend-runtime.log} (1 MB plus one backup).
+Stop Play before edits. Unity closes only the process trees it started.

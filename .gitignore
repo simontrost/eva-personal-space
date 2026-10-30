@@ -1,0 +1,77 @@
+# Unity-generated files and local editor state
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+.vs/
+.idea/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.opendb
+*.VC.db
+/UpgradeLog.htm
+
+# Omit runtime logs and scene backups.
+/[Ll]ogs/*
+
+# Machine-specific Python environments and generated files
+/Backend/.venv/
+/Backend/venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Model files are downloaded by Backend/setup_backend.ps1.
+/Backend/models/
+/Backend/voices/
+
+# Local speech recordings, test audio and machine-specific reports
+/Backend/recordings/
+/Backend/*.wav
+/Backend/*.log
+/Backend/hardware-report.json
+
+# LaTeX outputs other than the three published PDFs
+/Documentation_EN/build/
+*.aux
+*.log
+*.toc
+*.lol
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Local secrets and operating-system metadata
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.pfx
+*.p12
+.DS_Store
+Thumbs.db
+Desktop.ini
+# Local backend error logs, including the rotated copy.
+/Backend/backend-runtime.log*
+
+# Unity recovery scenes and upgrade reports are local editor artifacts.
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+/UpgradeLog*.htm

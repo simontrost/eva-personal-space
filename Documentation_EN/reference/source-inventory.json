@@ -1,0 +1,267 @@
+{
+  "snapshotDate": "2026-10-28",
+  "project": "EVA VrLab",
+  "note": "Current source after menu, preview, startup and cleanup changes. README/setup hashes describe this documentation revision. Runtime evidence and remaining manual checks are in pc-backend-validation-2026-10-28.md. Hashes identify contents, not a new acceptance test.",
+  "files": [
+    {
+      "path": "Assets/Editor/EVAAppearanceEditor.cs",
+      "sha256": "7757c55df220cb76f281028bb248ca14ace116b561a08bcb573e003cb186f790",
+      "bytes": 2293
+    },
+    {
+      "path": "Assets/Editor/EVAAppearanceSetup.cs",
+      "sha256": "2082b464be812fdc16235ede0badde20a21fc85d2914ff9b9d91480320d25c2f",
+      "bytes": 18680
+    },
+    {
+      "path": "Assets/Editor/EVAControlSetup.cs",
+      "sha256": "d5b205d26bc2e74e3d875e975224b9aa5118ec93748fc4f551d4f521e99fc274",
+      "bytes": 2100
+    },
+    {
+      "path": "Assets/Editor/EVAFeatureValidation.cs",
+      "sha256": "35ba38d05c68abdaa78443e256911cacccc4ff5666ad90aae44fa3a809223324",
+      "bytes": 5954
+    },
+    {
+      "path": "Assets/Editor/EVAGazeSetup.cs",
+      "sha256": "65f21c4ea60477384e27aa63752c40dada492d7afeef3e1f4180565031e7ad56",
+      "bytes": 9326
+    },
+    {
+      "path": "Assets/Editor/EVAGazeValidation.cs",
+      "sha256": "f59b17666da38826eeea230ad41d0bf39b94fd523e44b6cde27d1a5a9dad8bd1",
+      "bytes": 15826
+    },
+    {
+      "path": "Assets/Editor/EVARocketboxAppearanceImporter.cs",
+      "sha256": "f5b0aa0573f0249f839fafd2edc76e77cd8894f407babf17090a75577efee05d",
+      "bytes": 2037
+    },
+    {
+      "path": "Assets/Editor/EVASelectionMenuSetup.cs",
+      "sha256": "7c1c2d3a6f1dd9e3e13fb9b4b610f8d2bc2281b679779a2ae28e9a8ea5e04346",
+      "bytes": 9742
+    },
+    {
+      "path": "Assets/_Project/Editor/EVAXRProjectSetup.cs",
+      "sha256": "b906e8cfe9cb76725dd0854fec7c00de68f70c0fe8483d2e3b72f487e209fa48",
+      "bytes": 5127
+    },
+    {
+      "path": "Assets/_Project/Resources/EVAControlSettings.asset",
+      "sha256": "9704ca6ca785ebf7e91c2d39202f73181f117567345405acbce55eac9ad1b16a",
+      "bytes": 452
+    },
+    {
+      "path": "Assets/_Project/Scenes/Main.unity",
+      "sha256": "aa2b17a2e928ad48ca9b88b0747fa4fd67e048ea9709ddbd34e40249d83bbd03",
+      "bytes": 130725
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVAAnimationController.cs",
+      "sha256": "96b0e83c80b3572e339b176fa8f4abf4cce7ba17aac9d899414f3da7818f9c19",
+      "bytes": 7680
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVAAppearanceController.cs",
+      "sha256": "e903f1c50f9e5cd98c48d5847d4c7353ba0bff3cbe8d5660d14cf63cb3f27525",
+      "bytes": 5985
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVABlinkController.cs",
+      "sha256": "612e1749e2e3b5fa68b0df919337335dd644b56c29285f0973f7a1b8f2e7c3af",
+      "bytes": 8829
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVAGazeController.cs",
+      "sha256": "930a3779d257443ad22598af23d8180ef0d63da0158687322853366abbe85e7f",
+      "bytes": 9605
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVARocketboxHeadAxes.cs",
+      "sha256": "07f64eb9a1e53580dcddb6f615431d1f5aa22f60573109b9c7a310b95f991b03",
+      "bytes": 351
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVATurnAnimationLibrary.cs",
+      "sha256": "dd115758e324efa3726c8e70cfce63578f92653825e5ccf878b2702ff9a63d24",
+      "bytes": 498
+    },
+    {
+      "path": "Assets/_Project/Scripts/Animation/EVAVisemeController.cs",
+      "sha256": "79912a57fd53bbca408065ee3464904fd4a243ab565a61126e0c9d09793d770c",
+      "bytes": 15628
+    },
+    {
+      "path": "Assets/_Project/Scripts/Audio/MicrophoneCapture.cs",
+      "sha256": "f049450e060ad4b1d9595d829ac923129207407a15028bc87ec9b59c8e7a667a",
+      "bytes": 13085
+    },
+    {
+      "path": "Assets/_Project/Scripts/Audio/StreamingAudioPlayer.cs",
+      "sha256": "ac318962820c401e5cc031a0d4186db75aebe68fe5c940107395b5745c565228",
+      "bytes": 17042
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVAControlSettings.cs",
+      "sha256": "f87a019ebeb97c1d1fa398b1193ab66b6b4404cca9bf92f01bde23f88cac3c1c",
+      "bytes": 847
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVAConversationDisplay.cs",
+      "sha256": "726e0c22c277688961915ea91a940e54f7e099db3dff1dd3a232b65813f2e8fc",
+      "bytes": 33462
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVADesktopController.cs",
+      "sha256": "6a5a5e6492444c51674829337119f477935dffd53e0edf0457cf580671118a9d",
+      "bytes": 4268
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVALoadingOverlay.cs",
+      "sha256": "c8f4f6232460eb06180f211f22f06ac72c644a57ff0b9e3e102f47f2f7972ac8",
+      "bytes": 12950
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVASelectionMenu.cs",
+      "sha256": "5c67c9cbd891e751ca4951e3e641d30f047e7f87afa63681aa1c45d31d5c2070",
+      "bytes": 32356
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVASelectionPreviewIcon.cs",
+      "sha256": "ffe62bb17fcae4f245336835c72c6c9f820a5b27cb5e0aba0f75eae2144ab576",
+      "bytes": 2767
+    },
+    {
+      "path": "Assets/_Project/Scripts/EVASystemLauncher.cs",
+      "sha256": "1207610f38f9a61993f9cf02c756538331354443c1b8f4bdd40599eb92333796",
+      "bytes": 22976
+    },
+    {
+      "path": "Assets/_Project/Scripts/Networking/BackendConnection.cs",
+      "sha256": "780927c63c8884ddb549082ad0baf45009cd413f570cfcb387fdba9bf7494659",
+      "bytes": 5603
+    },
+    {
+      "path": "Assets/_Project/Scripts/State/EVAStateController.cs",
+      "sha256": "67a5923744d704725a0b11c9c6a290affddd2de5fdf3782046b55d5f06f066be",
+      "bytes": 5182
+    },
+    {
+      "path": "Assets/_Project/Scripts/VR/EVAVRController.cs",
+      "sha256": "209854a899b33aac5b475a183a9f624787e0ef7f7699dfc9f127275938eff1b1",
+      "bytes": 10334
+    },
+    {
+      "path": "Backend/BACKEND_SETUP.md",
+      "sha256": "83b405615b3f12c0042e958fdc48d01f0abf1f9a8a603ac895dafdafa5338341",
+      "bytes": 8693
+    },
+    {
+      "path": "Backend/cuda_runtime.py",
+      "sha256": "9ab7daadc336d37ab124342ab9c0f880456d5286b540da203b93f5db1543ce13",
+      "bytes": 878
+    },
+    {
+      "path": "Backend/download_backend_models.py",
+      "sha256": "840c2a7bafdc12d668c54492ff0f480131bc25a8edf91e3b880b39719c40e95b",
+      "bytes": 1763
+    },
+    {
+      "path": "Backend/hardware_report.ps1",
+      "sha256": "8b91388b8917dbc306857a8d6aab9d73e76039381bd0f3f0996d629ba5ec9d09",
+      "bytes": 4610
+    },
+    {
+      "path": "Backend/piper_compat.py",
+      "sha256": "6181d067c58645825cba3cdaa0d12413524ba7f305f3d8440279991dcd6d34cd",
+      "bytes": 1051
+    },
+    {
+      "path": "Backend/requirements.txt",
+      "sha256": "21125c4577f8b6c1fe8548748ee06be83b4f50492b5ba8f74f4c5ecbb6ad9e09",
+      "bytes": 1432
+    },
+    {
+      "path": "Backend/server.py",
+      "sha256": "4def461a3501c131658ba9097b204759f3c76ac14e7bbdaa27c33abe65b274d9",
+      "bytes": 51641
+    },
+    {
+      "path": "Backend/setup_backend.ps1",
+      "sha256": "f022649eb8e12905c5a7b1fc2f03a7bec85ffc55e503cbfff9cebb45c2138a59",
+      "bytes": 8852
+    },
+    {
+      "path": "Backend/test_female_voices.py",
+      "sha256": "025d6567d2284c723a0d49c8e07937ac0fbcfa091540eedbc1b7e378245f6988",
+      "bytes": 4906
+    },
+    {
+      "path": "Backend/test_live_voice_preview.py",
+      "sha256": "ad3f00319fc97b74b95c989255d76a9bf444a9f490839866a449f33074a059da",
+      "bytes": 2439
+    },
+    {
+      "path": "Backend/test_live_voice_profiles.py",
+      "sha256": "7b2499c0a9a6795f5807c9d4cca2982cbff34b68ce5259b78f108d244d11a9d4",
+      "bytes": 3219
+    },
+    {
+      "path": "Backend/test_response_language.py",
+      "sha256": "20338ff59a56a2c71469865c0020d4bd97c816e3f27a755c371d22895da7b475",
+      "bytes": 7900
+    },
+    {
+      "path": "Backend/test_voice_preview.py",
+      "sha256": "090bfad74aa40fe50bad05fff0a50c4eaad8b65afa1b1a2fce308790d2df3e67",
+      "bytes": 5825
+    },
+    {
+      "path": "Backend/test_voice_profiles.py",
+      "sha256": "d2c74163b76cbefe45a662e1d829c1811ea7082112f7e00f047913d121f50cc3",
+      "bytes": 3802
+    },
+    {
+      "path": "Backend/verify_backend.py",
+      "sha256": "ba26c4ec894793584a93f5b298609a7fbdc9e70923414e0d63b97d8f618a3564",
+      "bytes": 5830
+    },
+    {
+      "path": "Backend/voice_config.py",
+      "sha256": "95ff0bbc135b8e5f2824fcd150ff0466544f2ee7af99eb99c82c21b671196f6d",
+      "bytes": 1474
+    },
+    {
+      "path": "Packages/manifest.json",
+      "sha256": "563f050a0486eae7ee97409b076657360d4611c4f1cffac5a05721a5342a1087",
+      "bytes": 2185
+    },
+    {
+      "path": "Packages/packages-lock.json",
+      "sha256": "ab4bbbaa477f0c93231aab3d8ef104be9563dd0def60dce677319d6c58e37e0e",
+      "bytes": 14096
+    },
+    {
+      "path": "ProjectSettings/EditorBuildSettings.asset",
+      "sha256": "422418f37c72a6a8cb0531e6e0de0c5a390bfb89bd64960e3df25f5a42e7a4c0",
+      "bytes": 619
+    },
+    {
+      "path": "ProjectSettings/ProjectSettings.asset",
+      "sha256": "14b8f230f55a36bc30a217641530db2878e27b53cd10b4f9b29dbc2bc7870f28",
+      "bytes": 25647
+    },
+    {
+      "path": "ProjectSettings/ProjectVersion.txt",
+      "sha256": "76b9472c75cfe6e8b4824be2840d7a762cc52402b8f65ca0b01d6faebef347f2",
+      "bytes": 85
+    },
+    {
+      "path": "README.md",
+      "sha256": "e8208ee975505f33f470bf9c3db83ec3691b11bbd057cdb96e9bcd3d0e27cd32",
+      "bytes": 13578
+    }
+  ]
+}

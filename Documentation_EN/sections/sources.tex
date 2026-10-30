@@ -1,0 +1,53 @@
+\section{Sources and template}
+\begingroup\footnotesize\raggedright
+\subsection{Current project evidence}
+The source review of \textbf{28 October 2026} covered the selection menu, fixed
+language, independent voices, inline previews and code cleanup. This revision
+also includes live text, VR controls and panel placement from \textbf{29 October 2026}.
+It uses the actual scripts and saved Main scene. Scene settings can differ from
+script defaults.
+
+\file{reference/source-inventory.json} records source paths and SHA-256
+checksums from the 28 October baseline; it is not a checksum list of later edits.
+A checksum identifies the reviewed file contents. The Python package
+snapshot comes from \file{Backend/requirements.txt}; Unity versions come from
+the package files and \file{ProjectVersion.txt}.
+
+\file{reference/pc-backend-validation-2026-10-28.md} records the current desktop,
+resolved startup/renderer problems, compilation, automated checks and live
+voice/preview tests. Detailed local logs are excluded from Git. The tests used
+generated speech, not the Windows microphone or a headset. They do not establish
+exact transcription accuracy, answer quality, frame rate or a complete Player build.
+
+Development problems in Section 2 are lessons from the code, tests and project
+history. Resolved problems are labelled as such; remaining limits are in Section 3.
+
+\subsection{Official tool documentation}
+These upstream pages explain the components. Their current versions do not replace
+EVA's pinned package list or prove its performance.
+\begin{description}[leftmargin=10mm,labelwidth=8mm,itemsep=3pt]
+\item[U1] \href{https://github.com/SYSTRAN/faster-whisper}{Faster-Whisper: speech recognition and GPU dependencies}.
+\item[U2] \href{https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/ALIGNMENTS.md}{Piper: phoneme timing for alignment and lip-sync}.
+\item[U3] \href{https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html}{ONNX Runtime: CUDA execution and native libraries}.
+\item[U4] \href{https://docs.ollama.com/api/chat}{Ollama: local chat API}.
+\item[U5] \href{https://ollama.com/library/llama3.2:3b}{Llama 3.2 3B: model information and license links}.
+\item[U6] \href{https://github.com/microsoft/Microsoft-Rocketbox}{Microsoft Rocketbox: models, animation and license}.
+\item[U7] \href{https://github.com/OHF-Voice/piper1-gpl}{Piper engine and license}; voice cards:
+\href{https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/kristin/medium/MODEL_CARD}{Kristin},
+\href{https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/mike/medium/MODEL_CARD}{Mike},
+\href{https://huggingface.co/rhasspy/piper-voices/blob/main/de/de_DE/ramona/low/MODEL_CARD}{Ramona},
+\href{https://huggingface.co/rhasspy/piper-voices/blob/main/de/de_DE/thorsten/high/MODEL_CARD}{Thorsten-high}.
+\end{description}
+
+\subsection{Template and editing}
+The document retains Overleaf's
+\href{https://www.overleaf.com/latex/templates/technical-document-template/mdgftpdfbvbs}{Technical Document Template}
+and its unchanged \file{ol-softwaremanual.cls}. It supplies Roboto fonts and
+the title page. Template credits are in \file{TEMPLATE_NOTES.md}.
+
+Open \file{Documentation_EN} in Visual Studio Code. Edit \file{main.tex},
+\file{setup_guide.tex} or the relevant file in \file{sections}. Save, then press
+Ctrl+Shift+B to rebuild all three PDFs. The cheat sheet shares its source with
+Section 1 of this report. Code examples use \file{listings}; shell escape,
+Python/Pygments and Perl are not required by the LaTeX build.
+\endgroup

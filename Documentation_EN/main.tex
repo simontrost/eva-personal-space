@@ -1,0 +1,27 @@
+% !TeX program = pdflatex
+% Uses the original, unchanged Overleaf ol-softwaremanual.cls.
+\RequirePackage{fix-cm}
+\documentclass{ol-softwaremanual}
+\input{preamble}
+\title{Local Voice and Avatar\\Project Documentation}
+\version{1.3 (documentation)}
+\author{Daniel Ocks}
+\date{29 October 2026}
+\softwarelogo{\vspace*{12mm}{\fontsize{64}{72}\selectfont\bfseries EVA}\vspace{18mm}}
+\begin{document}
+\maketitle
+\tableofcontents
+\lstlistoflistings
+\clearpage
+\input{sections/cheat_sheet}
+\input{sections/knowledge}
+\clearpage
+\input{sections/open_issues}
+\clearpage
+\input{sections/others}
+\clearpage
+\appendix
+\input{sections/dependencies}
+\clearpage
+\input{sections/sources}
+\end{document}
