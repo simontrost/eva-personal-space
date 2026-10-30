@@ -9,7 +9,6 @@ using UnityEngine.XR;
 
 public enum EVAResponseLanguage { English, German }
 
-// This controller owns selection only. The existing launcher owns system readiness.
 [DefaultExecutionOrder(-750), DisallowMultipleComponent]
 [AddComponentMenu("EVA/EVA Selection Menu")]
 public sealed class EVASelectionMenu : MonoBehaviour
@@ -80,7 +79,6 @@ public sealed class EVASelectionMenu : MonoBehaviour
     public static EVASelectionMenu Instance => instance;
     public static bool BlocksInteraction => instance != null &&
         (!instance.initialized || !instance.conversationStarted || instance.menuOpen);
-    public bool IsMenuOpen => menuOpen;
     public EVAAppearanceController PrimaryAvatar => primaryAvatar;
     public int SelectedCharacter { get; private set; }
     public EVAAnimationStyle SelectedBehaviour { get; private set; }
@@ -147,7 +145,6 @@ public sealed class EVASelectionMenu : MonoBehaviour
         return selected;
     }
 
-    public void ConfigurePrimaryAvatar(EVAAppearanceController avatar) => primaryAvatar = avatar;
 
     private void Awake()
     {
@@ -604,7 +601,6 @@ public sealed class EVASelectionMenu : MonoBehaviour
             float left = 0.055f + i * 0.455f;
             var button = MakeButton("Voice " + i, panel, "",
                 new Vector2(left, 0.15f), new Vector2(left + 0.43f, 0.235f), () => ChooseVoice(index));
-            // The name selects the voice. The separate child control only previews it.
             var label = button.GetComponentInChildren<Text>().rectTransform;
             label.anchorMin = new Vector2(0.04f, 0.08f);
             label.anchorMax = new Vector2(0.76f, 0.92f);
@@ -635,7 +631,6 @@ public sealed class EVASelectionMenu : MonoBehaviour
         settingsRoot = Rect("Conversation controls", canvasObject.transform, Vector2.zero, Vector2.one).gameObject;
         settingsButton = MakeButton("Character settings", settingsRoot.transform, "Character settings  [M]",
             new Vector2(0.02f, 0.92f), new Vector2(0.23f, 0.98f), () => TryOpenMenu());
-        // In VR, right B is the settings control; avoid a detached corner HUD.
         if (EVAControlSettings.UseVR) settingsButton.gameObject.SetActive(false);
     }
 

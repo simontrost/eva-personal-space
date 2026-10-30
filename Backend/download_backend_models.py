@@ -1,5 +1,3 @@
-"""Download the model files that EVA expects beside server.py."""
-
 from __future__ import annotations
 
 import shutil

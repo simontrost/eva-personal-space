@@ -66,7 +66,6 @@ public sealed class EVAAnimationController : MonoBehaviour
         else OnValidate();
     }
 
-    // Appearance changes keep the existing style and conversation state.
     public void SetAnimator(Animator replacement)
     {
         if (replacement == null)

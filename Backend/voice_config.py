@@ -1,9 +1,3 @@
-"""Bilingual voice profiles selected in EVA's menu.
-
-Runtime, model downloads and preflight use the same configuration.
-Without a menu choice Unity can use the appearance. Older clients default to female.
-"""
-
 PIPER_ENGLISH_VOICE_NAME = "en_US-kristin-medium"
 PIPER_GERMAN_VOICE_NAME = "de_DE-ramona-low"
 PIPER_MALE_ENGLISH_VOICE_NAME = "en_US-mike-medium"

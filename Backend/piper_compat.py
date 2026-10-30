@@ -1,12 +1,3 @@
-"""Keep Piper's phoneme sequence consistent with each model's vocabulary.
-
-Older voices such as Ramona lack some combining marks emitted by current
-eSpeak. Piper already skips these when producing model IDs, but its alignment
-builder still expects their padding IDs. This breaks lip-sync even though
-the model generated valid audio. Filter the same unsupported symbols before
-both steps, without changing the IDs sent to the voice model.
-"""
-
 from dataclasses import fields
 
 from piper import PiperVoice

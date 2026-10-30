@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// Runs after desktop locomotion and appearance/style switching. Bone offsets are
-// removed before Animator evaluation and reapplied afterwards, never accumulated.
 [DefaultExecutionOrder(100), DisallowMultipleComponent]
 public sealed class EVAGazeController : MonoBehaviour
 {
@@ -32,11 +30,6 @@ public sealed class EVAGazeController : MonoBehaviour
     private float lookYaw, lookPitch;
     private int turnLayer = -1;
 
-    public Transform Target { get => target; set => target = value; }
-    public bool IsTurning => turning;
-    public Transform Head => head;
-    public float CurrentHeadYaw => lookYaw;
-    public int TurnLayer => turnLayer;
 
     private void Awake()
     {
@@ -58,7 +51,6 @@ public sealed class EVAGazeController : MonoBehaviour
         RefreshRig();
     }
 
-    // Public deterministic motion path also used by the isolated Editor tests.
     public void TickBody(float deltaTime)
     {
         RefreshRig();
@@ -77,7 +69,6 @@ public sealed class EVAGazeController : MonoBehaviour
             {
                 float remaining = Mathf.Max(0f, Mathf.Abs(angle) - turnStopAngle);
                 float step = Mathf.Min(60f / turnDuration * deltaTime, remaining);
-                // Only yaw changes. No FBX root translation or doubled root yaw.
                 transform.rotation = Quaternion.AngleAxis(step * turnDirection, Vector3.up) * transform.rotation;
                 turnElapsed += deltaTime;
                 if (turnElapsed >= turnDuration && remaining > step + turnStopAngle)
@@ -110,7 +101,6 @@ public sealed class EVAGazeController : MonoBehaviour
 
     public void TickGaze(float deltaTime)
     {
-        // Calling twice without an Animator update must not accumulate rotation.
         RestoreAnimatedPose();
         RefreshRig();
         if (head == null || animator == null || !animator.isActiveAndEnabled) return;
@@ -128,8 +118,6 @@ public sealed class EVAGazeController : MonoBehaviour
         lookPitch = Mathf.Lerp(lookPitch, desiredPitch, response);
         if (!valid && Mathf.Abs(lookYaw) + Mathf.Abs(lookPitch) < 0.01f) return;
 
-        // Generic Rocketbox bones have non-standard axes. Calibrate from the
-        // rest pose, then aim in world space instead of assuming local Z forward.
         Vector3 forward = Quaternion.AngleAxis(lookYaw, Vector3.up) * transform.forward;
         Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
         forward = Quaternion.AngleAxis(lookPitch, right) * forward;
@@ -158,7 +146,6 @@ public sealed class EVAGazeController : MonoBehaviour
         turning = false;
         turnWeight = 0f;
         if (next == null) return;
-        // Resolve the skeleton belonging to this Animator, not inactive options.
         Transform skeleton = next.transform.Find("Bip01");
         if (skeleton == null) return;
         foreach (var bone in skeleton.GetComponentsInChildren<Transform>(true))
@@ -168,7 +155,6 @@ public sealed class EVAGazeController : MonoBehaviour
         }
         if (head != null)
         {
-            // Rest axes are stored by the setup component before animations run.
             var axes = next.GetComponent<EVARocketboxHeadAxes>();
             if (axes != null) { headForwardLocal = axes.forward; headUpLocal = axes.up; }
             else { headForwardLocal = head.InverseTransformDirection(transform.forward); headUpLocal = head.InverseTransformDirection(Vector3.up); }

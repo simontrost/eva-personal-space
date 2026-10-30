@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -58,7 +58,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
     private static Color userAccentColor => EVAInterfaceTheme.Text;
     private static Color evaAccentColor => EVAInterfaceTheme.Text;
 
-    [Tooltip("Maximum displayed words per second; partial recognition can revise its last words.")]
+    [Tooltip("Maximum displayed words per second. Spoken words are confirmed before appearing and then stay unchanged.")]
     [SerializeField, Range(8f, 40f)] private float wordsPerSecond = 20f;
 
     [SerializeField]
@@ -93,6 +93,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
 
     private readonly StringBuilder responseBuilder = new();
     private readonly EVAWordStream userWords = new();
+    private readonly EVAStableTranscript userTranscript = new();
     private readonly EVAWordStream evaWords = new();
     private int lastTranscriptRevision;
     private bool transcriptionFinal;
@@ -115,7 +116,6 @@ public sealed class EVAConversationDisplay : MonoBehaviour
     private bool responseDirty;
     private bool conversationVisible = true;
     private bool menuSuppressed;
-    public bool IsMenuSuppressed => menuSuppressed;
     private bool isDragging;
     private bool isResizing;
     private float nextResponseRefreshTime;
@@ -142,8 +142,8 @@ public sealed class EVAConversationDisplay : MonoBehaviour
         }
 
         CreateDisplay();
-        SetUserText("—");
-        SetEvaText("—");
+        SetUserText(string.Empty);
+        SetEvaText(string.Empty);
     }
 
     private void OnEnable()
@@ -252,19 +252,19 @@ public sealed class EVAConversationDisplay : MonoBehaviour
     {
         BeginSession(microphoneCapture != null ? microphoneCapture.RecordingSessionId : null);
         SetUserText("Listening...");
-        SetEvaText("—");
+        SetEvaText(string.Empty);
     }
 
     private void HandleProcessingStarted()
     {
-        if (userWords.VisibleText.Length == 0) SetUserText("Recognizing speech...");
+        if (userTranscript.Text.Length == 0 && userWords.VisibleText.Length == 0) SetUserText("Recognizing speech...");
     }
 
     private void HandleInteractionFailed()
     {
         ResetConversationState();
         SetUserText("Recording failed.");
-        SetEvaText("—");
+        SetEvaText(string.Empty);
     }
 
     private void HandleDisconnected()
@@ -299,7 +299,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
         {
             case "transcription.started":
                 if (currentSessionId == null) BeginSession(envelope.sessionId);
-                if (IsCurrentSession(envelope.sessionId) && userWords.VisibleText.Length == 0)
+                if (IsCurrentSession(envelope.sessionId) && userTranscript.Text.Length == 0 && userWords.VisibleText.Length == 0)
                     SetUserText("Recognizing speech...");
                 break;
 
@@ -307,7 +307,8 @@ public sealed class EVAConversationDisplay : MonoBehaviour
                 if (IsCurrentSession(envelope.sessionId) && !transcriptionFinal && envelope.revision > lastTranscriptRevision)
                 {
                     lastTranscriptRevision = envelope.revision;
-                    userWords.SetTarget(NormalizeDisplayText(envelope.text), true);
+                    if (userTranscript.Accept(NormalizeDisplayText(envelope.text), false))
+                        userWords.SetTarget(userTranscript.Text, true);
                 }
                 break;
 
@@ -318,8 +319,8 @@ public sealed class EVAConversationDisplay : MonoBehaviour
             case "transcription.empty":
                 if (IsCurrentSession(envelope.sessionId))
                 {
-                    SetUserText("No speech detected.");
-                    SetEvaText("—");
+                    if (userTranscript.Text.Length == 0) SetUserText("No speech detected.");
+                    SetEvaText(string.Empty);
                 }
                 break;
 
@@ -356,8 +357,9 @@ public sealed class EVAConversationDisplay : MonoBehaviour
 
         transcriptionFinal = true;
         string transcript = NormalizeDisplayText(envelope.text);
-        if (string.IsNullOrEmpty(transcript)) SetUserText("No speech detected.");
-        else userWords.SetTarget(transcript, true);
+        userTranscript.Accept(transcript, true);
+        if (userTranscript.Text.Length == 0) SetUserText("No speech detected.");
+        else userWords.SetTarget(userTranscript.Text, true);
     }
 
     private void HandleLlmStarted(string sessionId)
@@ -410,7 +412,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
         }
 
         responseDirty = false;
-        if (string.IsNullOrEmpty(response)) SetEvaText("—");
+        if (string.IsNullOrEmpty(response)) SetEvaText(string.Empty);
         else evaWords.SetTarget(response, true);
     }
 
@@ -460,7 +462,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
         )
         {
             SetUserText("No speech detected.");
-            SetEvaText("—");
+            SetEvaText(string.Empty);
             return;
         }
 
@@ -471,6 +473,7 @@ public sealed class EVAConversationDisplay : MonoBehaviour
     {
         currentSessionId = sessionId;
         userWords.Clear();
+        userTranscript.Clear();
         evaWords.Clear();
         lastTranscriptRevision = 0;
         transcriptionFinal = false;
@@ -791,7 +794,6 @@ public sealed class EVAConversationDisplay : MonoBehaviour
     {
         if (EVAControlSettings.UseVR)
         {
-            // Desktop panel coordinates must not move the VR surface off to one side.
             conversationArea.anchorMin = conversationArea.anchorMax = new Vector2(0.5f, 0.5f);
             conversationArea.sizeDelta = new Vector2(1060f, 400f);
             conversationArea.anchoredPosition = new Vector2(0f, -40f);
@@ -1082,23 +1084,18 @@ public sealed class EVAConversationDisplay : MonoBehaviour
         image.color = EVAInterfaceTheme.Accent;
         image.raycastTarget = false;
 
-        RectTransform textTransform = CreateUiObject(
-            "Icon",
-            resizeHandle,
-            uiLayer
-        );
-
-        StretchAcrossParent(textTransform);
-
-        Text text = textTransform.gameObject.AddComponent<Text>();
-        text.font = GetRuntimeFont();
-        text.fontSize = 22;
-        text.fontStyle = FontStyle.Bold;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.color = Color.white;
-        text.supportRichText = false;
-        text.raycastTarget = false;
-        text.text = "↘";
+        for (int i = 0; i < 3; i++)
+        {
+            RectTransform grip = CreateUiObject("Grip " + i, resizeHandle, uiLayer);
+            grip.anchorMin = grip.anchorMax = new Vector2(1f, 0f);
+            grip.pivot = new Vector2(1f, 0.5f);
+            grip.anchoredPosition = new Vector2(-8f, 8f + i * 6f);
+            grip.sizeDelta = new Vector2(8f + i * 8f, 2f);
+            grip.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            Image line = grip.gameObject.AddComponent<Image>();
+            line.color = EVAInterfaceTheme.Text;
+            line.raycastTarget = false;
+        }
     }
 
     private static RectTransform CreatePanel(

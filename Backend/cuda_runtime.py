@@ -1,4 +1,3 @@
-"""Shared Windows CUDA DLL setup for the server and installation preflight."""
 import os
 import sys
 from pathlib import Path

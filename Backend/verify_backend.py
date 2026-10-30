@@ -1,5 +1,3 @@
-"""Fast, non-destructive preflight check for EVA's GPU backend."""
-
 from __future__ import annotations
 
 import importlib.metadata

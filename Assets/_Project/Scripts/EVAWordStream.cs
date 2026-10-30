@@ -1,6 +1,3 @@
-using System;
-
-// Keeps word boundaries intact even when the model sends sub-word tokens.
 public sealed class EVAWordStream
 {
     private string target = "";
@@ -17,8 +14,6 @@ public sealed class EVAWordStream
         while (common < visibleLength && common < value.Length && target[common] == value[common]) common++;
         if (common < visibleLength)
         {
-            // Whisper may revise the last words. Preserve the common prefix,
-            // rewind to its last full word, then reveal the corrected suffix.
             while (common > 0 && (common >= value.Length || !char.IsWhiteSpace(value[common]))) common--;
             visibleLength = common;
         }

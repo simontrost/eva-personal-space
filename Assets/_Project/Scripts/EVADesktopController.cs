@@ -16,7 +16,6 @@ public sealed class EVADesktopController : MonoBehaviour
     private float pitch;
     private bool skipMouseDelta;
     public bool MouseCaptured => Cursor.lockState == CursorLockMode.Locked;
-    public Camera View => view;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureInstanceExists()
@@ -66,7 +65,6 @@ public sealed class EVADesktopController : MonoBehaviour
         : new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
             (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f));
 
-    // One motion path for actual input and automated movement checks.
     public void ApplyMotion(Vector2 movement, Vector2 mouseDelta, bool sprint, float deltaTime)
     {
         if (view == null || EVAControlSettings.UseVR) return;

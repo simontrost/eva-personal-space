@@ -69,7 +69,6 @@ public sealed class EVAVisemeController : MonoBehaviour
                 nameof(replacement));
         }
 
-        // Keep pending cues and the audio clock when changing during speech.
         ResetBlendShapeWeights();
         blendShapesReady = false;
         faceRenderer = replacement;

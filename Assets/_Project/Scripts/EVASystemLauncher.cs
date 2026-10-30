@@ -349,6 +349,18 @@ public sealed class EVASystemLauncher : MonoBehaviour
             yield break;
         }
 
+        var microphone = FindFirstObjectByType<MicrophoneCapture>();
+        if (microphone != null)
+        {
+            SetStatus("Preparing microphone");
+            yield return microphone.PrepareMicrophone();
+            if (!microphone.IsMicrophoneReady)
+            {
+                FailStartup("Microphone preparation failed. " + microphone.MicrophoneError);
+                yield break;
+            }
+        }
+
         IsReady = true;
         SetStatus("Ready");
         startupCoroutine = null;
@@ -568,8 +580,6 @@ public sealed class EVASystemLauncher : MonoBehaviour
                     "PYTHONUNBUFFERED"
                 ] = "1";
 
-                // Redirected Python output otherwise uses the Windows
-                // code page, which cannot encode every generated response.
                 startInfo.EnvironmentVariables[
                     "PYTHONIOENCODING"
                 ] = "utf-8:backslashreplace";
@@ -785,8 +795,6 @@ public sealed class EVASystemLauncher : MonoBehaviour
 
     private void OnDisable()
     {
-        // Unity calls OnDisable before an in-Play script/domain reload, without
-        // necessarily calling OnDestroy. Close owned pipes/processes first.
         ShutDownManagedProcesses();
     }
 

@@ -1,4 +1,3 @@
-"""Bounded, latest-snapshot recognition while a PCM recording is arriving."""
 import asyncio
 import logging
 import time
@@ -16,7 +15,6 @@ class LiveTranscription:
         self.changed = asyncio.Event()
         self.closed = False
         self.last_offer = 0.0
-        self.last_text = ""
         self.revision = 0
         self.task = asyncio.create_task(self._run())
 
@@ -24,8 +22,6 @@ class LiveTranscription:
         now = time.monotonic()
         if self.closed or len(pcm) < self.sample_rate or now - self.last_offer < self.interval:
             return
-        # At most one in-flight decode and one pending snapshot. Slow GPUs never
-        # accumulate a queue of outdated recognition jobs.
         self.pending = bytes(pcm)
         self.last_offer = now
         self.changed.set()
@@ -40,17 +36,15 @@ class LiveTranscription:
                 if self.closed:
                     return
                 text = text.strip()
-                if text and text != self.last_text:
+                if text:
                     self.revision += 1
                     await self.send({"type": "transcription.partial", "sessionId": self.session_id,
                                      "text": text, "language": self.language,
                                      "revision": self.revision})
-                    self.last_text = text
         except asyncio.CancelledError:
             raise
         except Exception:
             self.closed = True
-            # A preview failure must not stop the final full-quality transcription.
             logging.getLogger("eva.backend").warning("Live transcription stopped", exc_info=True)
 
     async def close(self):

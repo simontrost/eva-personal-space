@@ -710,7 +710,6 @@ def transcribe_audio(file_path: Path, language: str = "en") -> dict:
 
 
 def transcribe_pcm(pcm: bytes, sample_rate: int, language: str) -> str:
-    # An in-memory WAV lets PyAV use the same resampler as final transcription.
     source = io.BytesIO()
     with wave.open(source, "wb") as wav_file:
         wav_file.setnchannels(1)
@@ -1660,7 +1659,6 @@ async def handle_connection(connection) -> None:
                     RECORDINGS_DIRECTORY / file_name
                 )
                 session_id = audio_info["sessionId"]
-                # Snapshot the profile with the recording, not with a later turn.
                 voice_profile = audio_info["voiceProfile"]
                 response_language = audio_info["responseLanguage"]
 
@@ -1850,7 +1848,6 @@ async def handle_connection(connection) -> None:
 
 
 def configure_backend_logging() -> logging.Logger:
-    # Keep server tracebacks available even when Unity hides process output.
     logger = logging.getLogger("eva.backend")
     logger.setLevel(logging.INFO)
     handler = RotatingFileHandler(

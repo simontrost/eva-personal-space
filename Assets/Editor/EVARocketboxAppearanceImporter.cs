@@ -2,7 +2,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-// Scope these settings to the new imports, not existing EVA assets or clips.
 public sealed class EVARocketboxAppearanceImporter : AssetPostprocessor
 {
     public const string Root = "Assets/_Project/Avatars/Rocketbox/AppearanceOptions/";

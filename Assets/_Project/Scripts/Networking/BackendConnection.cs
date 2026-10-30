@@ -63,7 +63,6 @@ public sealed class BackendConnection : MonoBehaviour
         isShuttingDown = false;
         var connectingSocket = new WebSocket(serverUrl);
         socket = connectingSocket;
-        // Ignore queued callbacks from a previous connection attempt.
         connectingSocket.OnOpen += () => { if (socket == connectingSocket && !isShuttingDown) HandleOpen(); };
         connectingSocket.OnError += error => { if (socket == connectingSocket && !isShuttingDown) HandleError(error); };
         connectingSocket.OnClose += code => { if (socket == connectingSocket && !isShuttingDown) HandleClose(code); };
@@ -177,7 +176,6 @@ public sealed class BackendConnection : MonoBehaviour
             return false;
         }
 
-        // JSON control messages begin with "{" or "[".
         return data[0] == (byte)'{' || data[0] == (byte)'[';
     }
 

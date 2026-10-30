@@ -33,7 +33,6 @@ public sealed class EVAAppearanceController : MonoBehaviour
     public int AppearanceIndex => appearanceIndex;
     public bool IsMale => appearanceIndex >= 1 && appearanceIndex <= 3;
     public string VoiceProfile => IsMale ? "male" : "female";
-    public Appearance[] Appearances => appearances;
     public bool IsConfigured => appearances != null && appearances.Length == 6;
 
     public void Configure(EVAAnimationController animations,
@@ -59,9 +58,6 @@ public sealed class EVAAppearanceController : MonoBehaviour
         ApplyAppearance();
     }
 
-    // Imported prefab refreshes can invalidate cached child-component references
-    // while the actual appearance remains in the hierarchy. Resolve only missing
-    // references; never replace an existing model or reset the selected index.
     public int RepairMissingModelReferences()
     {
         if (!IsConfigured) return 0;
@@ -119,9 +115,6 @@ public sealed class EVAAppearanceController : MonoBehaviour
             return;
         }
 
-        // Keep the original model hierarchy/components intact. Only its rendering
-        // and Animator are hidden; the lip-sync subscriptions stay on the host.
-        // Each alternative has its own Animator root, so Generic bone paths work.
         visemeController.SetFaceRenderer(selected.face);
         blinkController.SetFaceRenderer(selected.face);
         for (int i = 1; i < appearances.Length; i++)

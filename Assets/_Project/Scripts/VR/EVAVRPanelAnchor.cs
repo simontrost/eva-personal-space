@@ -4,7 +4,6 @@ using UnityEngine.InputSystem.UI;
 
 public enum EVAVRPanelKind { Menu, Conversation, Loading }
 
-// Places a readable UI surface in the scene. Turning the head never moves it.
 [DisallowMultipleComponent, RequireComponent(typeof(Canvas))]
 public sealed class EVAVRPanelAnchor : MonoBehaviour
 {
@@ -28,7 +27,6 @@ public sealed class EVAVRPanelAnchor : MonoBehaviour
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.worldCamera = Camera.main;
         canvas.scaleFactor = 1f;
-        // A screen GraphicRaycaster cannot raycast from a controller in 3D.
         var screenRaycaster = canvas.GetComponent<GraphicRaycaster>();
         if (screenRaycaster != null) screenRaycaster.enabled = false;
         var raycaster = canvas.GetComponent<TrackedDeviceRaycaster>();
@@ -100,14 +98,12 @@ public sealed class EVAVRPanelAnchor : MonoBehaviour
         if (avatar.HasValue && kind != EVAVRPanelKind.Loading)
         {
             float avatarDistance = Vector3.ProjectOnPlane(avatar.Value - eye, Vector3.up).magnitude;
-            // Leave room in front of the body, including the tilted panel's top edge.
             distance = Mathf.Clamp(avatarDistance - 0.6f, distance, distance + 1f);
         }
         Vector3 position = eye + direction * distance;
         if (kind == EVAVRPanelKind.Menu)
             position -= Vector3.Cross(Vector3.up, direction) * Mathf.Clamp(sideOffset, 0.5f, 1.2f);
         position.y = eye.y - (kind == EVAVRPanelKind.Conversation ? Mathf.Clamp(textDrop, 0.1f, 0.8f) : 0.08f);
-        // Keep the lower edge above the floor for seated users as well.
         float floor = avatar.HasValue ? avatar.Value.y : 0f;
         position.y = Mathf.Max(position.y, floor + (kind == EVAVRPanelKind.Menu ? 0.9f : 0.65f));
         return position;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 
@@ -113,6 +114,7 @@ public sealed class EVAVRController : MonoBehaviour
             return;
         }
 
+        EnsureMenuPointer();
         UpdateHeadPose();
         UpdateLocomotion();
 
@@ -185,14 +187,23 @@ public sealed class EVAVRController : MonoBehaviour
         UpdateHeadPose();
         EVAVRPanelAnchor.RecenterAll();
         rigInitialized = true;
-        menuPointer = EVAVRPointer.Create(cameraOffset, launcher);
+        EnsureMenuPointer();
 
         Debug.Log(
             "[EVA/VR] VR rig ready. Left stick moves, right " +
             "stick snap-turns, and holding A on the right " +
-            "controller activates push-to-talk. Point with the right " +
+            "controller activates push-to-talk. Point with either " +
             "controller and click with its trigger; B opens/closes settings."
         );
+    }
+
+    private void EnsureMenuPointer()
+    {
+        var current = UnityEngine.EventSystems.EventSystem.current;
+        if (current == null) return;
+        if (menuPointer != null && menuPointer.gameObject == current.gameObject) return;
+        if (menuPointer != null) menuPointer.enabled = false;
+        menuPointer = EVAVRPointer.Create(cameraOffset, launcher);
     }
 
     private bool ConfigureTrackingOrigin()
@@ -346,14 +357,34 @@ public sealed class EVAVRController : MonoBehaviour
         return Vector2.zero;
     }
 
+    private bool ReadLeftButton(string controlName, InputFeatureUsage<bool> legacyUsage)
+    {
+        var device = UnityEngine.InputSystem.XR.XRController.leftHand;
+        var button = device != null && device.added
+            ? device.TryGetChildControl<ButtonControl>(controlName) : null;
+        if (button != null) return button.isPressed;
+
+        if (!leftController.isValid)
+            leftController = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        return leftController.isValid && leftController.TryGetFeatureValue(legacyUsage, out bool pressed) && pressed;
+    }
+
     private void UpdatePanelControls()
     {
-        if (!leftController.isValid) leftController = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-        bool toggle = leftController.isValid && leftController.TryGetFeatureValue(CommonUsages.primaryButton, out bool x) && x;
-        bool recenter = leftController.isValid && leftController.TryGetFeatureValue(CommonUsages.secondaryButton, out bool y) && y;
+        if (!EVAControlSettings.UseVR)
+        {
+            textToggleHeld = recenterHeld = false;
+            return;
+        }
+        bool toggle = ReadLeftButton("primaryButton", CommonUsages.primaryButton);
+        bool recenter = ReadLeftButton("secondaryButton", CommonUsages.secondaryButton);
         if (toggle && !textToggleHeld && launcher != null && launcher.IsReady && !EVASelectionMenu.BlocksInteraction)
             FindFirstObjectByType<EVAConversationDisplay>()?.ToggleVisibility();
-        if (recenter && !recenterHeld) EVAVRPanelAnchor.RecenterAll();
+        if (recenter && !recenterHeld)
+        {
+            EVAVRPanelAnchor.RecenterAll();
+            Debug.Log("[EVA/VR] UI panels recentered.");
+        }
         textToggleHeld = toggle;
         recenterHeld = recenter;
     }

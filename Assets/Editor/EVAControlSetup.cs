@@ -38,7 +38,6 @@ public static class EVAControlSetup
         var general = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Standalone);
         if (general != null && general.InitManagerOnStart)
         {
-            // EVA starts XR explicitly only in VR mode, never before mode selection.
             general.InitManagerOnStart = false;
             EditorUtility.SetDirty(general);
             AssetDatabase.SaveAssets();

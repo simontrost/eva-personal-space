@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -41,7 +42,14 @@ public sealed class MicrophoneCapture : MonoBehaviour
     [Range(1, 120)]
     private int maximumRecordingSeconds = 30;
 
-    private AudioClip recordingClip;
+    private const int MicrophoneBufferSeconds = 4;
+    private AudioClip microphoneClip;
+    private float[] microphoneReadBuffer;
+    private float[] recordingSamples;
+    private bool preparingMicrophone;
+    private bool microphoneReady;
+    private int recordingReadPosition;
+    private float lastCaptureTime;
     private string activeDevice;
     private bool isRecording;
     private bool isSending;
@@ -61,7 +69,9 @@ public sealed class MicrophoneCapture : MonoBehaviour
     private UnityEngine.XR.InputDevice pushToTalkController;
 
     public bool InteractionEnabled { get; private set; } = true;
-    public bool CanRecord => InteractionEnabled && !EVASelectionMenu.BlocksInteraction;
+    public bool IsMicrophoneReady => microphoneReady && microphoneClip != null;
+    public string MicrophoneError { get; private set; }
+    public bool CanRecord => InteractionEnabled && IsMicrophoneReady && !EVASelectionMenu.BlocksInteraction;
     public bool IsRecording => isRecording;
     public bool IsSending => isSending;
 
@@ -105,6 +115,82 @@ public sealed class MicrophoneCapture : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        var launcher = FindFirstObjectByType<EVASystemLauncher>();
+        if (launcher == null || launcher.IsReady) StartCoroutine(PrepareMicrophone());
+    }
+
+    public IEnumerator PrepareMicrophone()
+    {
+        while (preparingMicrophone) yield return null;
+        if (IsMicrophoneReady) yield break;
+        if (!isActiveAndEnabled)
+        {
+            MicrophoneError = "The microphone component is disabled.";
+            yield break;
+        }
+        preparingMicrophone = true;
+        try
+        {
+            if (!OpenMicrophone()) yield break;
+            float deadline = Time.realtimeSinceStartup + 5f;
+            while (microphoneClip != null && Microphone.GetPosition(activeDevice) <= 0 &&
+                Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            microphoneReady = microphoneClip != null && Microphone.IsRecording(activeDevice) &&
+                Microphone.GetPosition(activeDevice) > 0;
+            if (!microphoneReady)
+            {
+                MicrophoneError = "The microphone did not provide audio. Check its device and permissions.";
+                Debug.LogError("[EVA] " + MicrophoneError);
+                ReleaseMicrophone();
+                yield break;
+            }
+            MicrophoneError = null;
+            waitForPushToTalkRelease = true;
+            Debug.Log("[EVA] Microphone prepared; push-to-talk can start without reopening the audio device.");
+        }
+        finally { preparingMicrophone = false; }
+    }
+
+    private bool OpenMicrophone()
+    {
+        ReleaseMicrophone();
+        MicrophoneError = null;
+        try
+        {
+            if (Microphone.devices.Length == 0)
+                throw new InvalidOperationException("Windows did not report an available microphone.");
+            activeDevice = string.IsNullOrWhiteSpace(microphoneDevice) ? null : microphoneDevice;
+            microphoneClip = Microphone.Start(activeDevice, true, MicrophoneBufferSeconds, requestedSampleRate);
+            if (microphoneClip == null)
+                throw new InvalidOperationException("The microphone could not be opened.");
+            microphoneReadBuffer = new float[Mathf.Max(1, microphoneClip.frequency / 16) * microphoneClip.channels];
+            recordingSamples = new float[microphoneClip.frequency * maximumRecordingSeconds * microphoneClip.channels];
+            return true;
+        }
+        catch (Exception exception)
+        {
+            MicrophoneError = exception.Message;
+            Debug.LogError("[EVA] Microphone preparation failed: " + MicrophoneError);
+            ReleaseMicrophone();
+            return false;
+        }
+    }
+
+    private void ReleaseMicrophone()
+    {
+        microphoneReady = false;
+        if (microphoneClip == null) return;
+        Microphone.End(activeDevice);
+        Destroy(microphoneClip);
+        microphoneClip = null;
+        microphoneReadBuffer = null;
+        activeDevice = null;
+    }
+
     private void Update()
     {
         if (!CanRecord)
@@ -119,7 +205,6 @@ public sealed class MicrophoneCapture : MonoBehaviour
         bool controllerHeld = IsControllerPushToTalkHeld();
         bool shouldRecord = keyboardHeld || controllerHeld;
 
-        // The A button used to confirm the menu must be released before recording.
         if (waitForPushToTalkRelease)
         {
             if (!shouldRecord) waitForPushToTalkRelease = false;
@@ -138,8 +223,14 @@ public sealed class MicrophoneCapture : MonoBehaviour
         }
 
         pushToTalkHeld = shouldRecord;
+        if (isRecording && recordingStreamError == null)
+        {
+            try { GetRecordedFrames(); }
+            catch (Exception exception) { recordingStreamError = exception; }
+        }
         if (isRecording && recordingStreamError != null)
         {
+            Debug.LogError("[EVA] Recording failed: " + recordingStreamError.Message);
             CancelActiveRecording();
             InteractionFailed?.Invoke();
         }
@@ -214,56 +305,29 @@ public sealed class MicrophoneCapture : MonoBehaviour
             return;
         }
 
-        if (
-            streamingAudioPlayer != null
-            && streamingAudioPlayer.InterruptPlayback()
-        )
+        if (!IsMicrophoneReady || !Microphone.IsRecording(activeDevice))
         {
+            Debug.LogWarning("[EVA] The microphone is not ready. Check the selected device and restart Play Mode.");
+            return;
+        }
+        if (streamingAudioPlayer != null && streamingAudioPlayer.InterruptPlayback())
             SendResponseCancellation();
-        }
 
-        if (Microphone.devices.Length == 0)
-        {
-            Debug.LogError(
-                "[EVA] Windows didn't report an available microphone."
-            );
-            return;
-        }
-
-        activeDevice = string.IsNullOrWhiteSpace(microphoneDevice)
-            ? null
-            : microphoneDevice;
-
-        recordingClip = Microphone.Start(
-            activeDevice,
-            false,
-            maximumRecordingSeconds,
-            requestedSampleRate
-        );
-
-        if (recordingClip == null)
-        {
-            Debug.LogError(
-                "[EVA] The microphone recording couldn't be started."
-            );
-            return;
-        }
-
+        recordingReadPosition = Microphone.GetPosition(activeDevice);
         isRecording = true;
         recordingSessionId = Guid.NewGuid().ToString("N");
         recordingCancellation = new CancellationTokenSource();
         recordingStreamError = null;
         sentFrames = observedFrames = 0;
-        recordingStartedAt = Time.unscaledTime;
+        recordingStartedAt = lastCaptureTime = Time.unscaledTime;
         streamWhileRecording = backendConnection.SupportsLiveTranscription;
         recordingVoiceProfile = ResolveRecordingVoiceProfile();
-        // Freeze the menu choice for this turn, just like the appearance's voice profile.
         recordingResponseLanguage = EVASelectionMenu.Instance != null
             ? EVASelectionMenu.Instance.ResponseLanguage : "en";
 
         ListeningStarted?.Invoke();
         recordingStreamTask = streamWhileRecording
-            ? StreamRecordingAsync(recordingClip, recordingCancellation.Token)
+            ? StreamRecordingAsync(recordingCancellation.Token)
             : Task.CompletedTask;
 
         string displayedDevice = activeDevice ?? "Windows default";
@@ -276,28 +340,28 @@ public sealed class MicrophoneCapture : MonoBehaviour
     public async void EndRecordingAndSend()
     {
         if (!CanRecord) { CancelActiveRecording(); return; }
-        if (!isRecording || recordingClip == null) return;
+        if (!isRecording || microphoneClip == null) return;
 
-        AudioClip completedClip = recordingClip;
-        int recordedFrames = GetRecordedFrames(completedClip);
-        Microphone.End(activeDevice);
-        isRecording = false;
         isSending = true;
-        ProcessingStarted?.Invoke();
         bool completed = false;
         try
         {
+            int recordedFrames = GetRecordedFrames();
+            int sampleRate = microphoneClip.frequency;
+            int channels = microphoneClip.channels;
+            isRecording = false;
+            ProcessingStarted?.Invoke();
             await recordingStreamTask;
             if (recordingStreamError != null) throw recordingStreamError;
             if (recordedFrames <= 0) throw new InvalidOperationException("The recording contains no samples.");
             if (!streamWhileRecording)
-                await SendRecordingStartAsync(completedClip.frequency, recordedFrames * 2, false);
-            await SendFramesAsync(completedClip, recordedFrames, recordingCancellation.Token);
+                await SendRecordingStartAsync(sampleRate, recordedFrames * 2, false);
+            await SendFramesAsync(recordedFrames, sampleRate, channels, recordingCancellation.Token);
             EnsureConnected();
             await backendConnection.SendJsonAsync(JsonUtility.ToJson(
                 new AudioEndMessage { sessionId = recordingSessionId }));
             completed = true;
-            Debug.Log($"[EVA] Recording sent: {(float)recordedFrames / completedClip.frequency:F2}s, {sentFrames * 2} PCM bytes.");
+            Debug.Log($"[EVA] Recording sent: {(float)recordedFrames / sampleRate:F2}s, {sentFrames * 2} PCM bytes.");
         }
         catch (OperationCanceledException) { }
         catch (Exception exception)
@@ -307,28 +371,27 @@ public sealed class MicrophoneCapture : MonoBehaviour
         }
         finally
         {
+            isRecording = false;
             if (!completed) await SendRecordingCancellationAsync(recordingSessionId);
             recordingCancellation?.Dispose();
             recordingCancellation = null;
-            recordingClip = null;
-            activeDevice = null;
             isSending = false;
-            Destroy(completedClip);
         }
     }
 
-    private async Task StreamRecordingAsync(AudioClip clip, CancellationToken cancellation)
+    private async Task StreamRecordingAsync(CancellationToken cancellation)
     {
         try
         {
-            await SendRecordingStartAsync(clip.frequency, 0, true);
+            int sampleRate = microphoneClip.frequency;
+            int channels = microphoneClip.channels;
+            await SendRecordingStartAsync(sampleRate, 0, true);
             while (isRecording)
             {
                 cancellation.ThrowIfCancellationRequested();
-                int frames = GetRecordedFrames(clip);
-                // Send short contiguous chunks; never retransmit an earlier prefix.
-                if (frames - sentFrames >= clip.frequency / 5)
-                    await SendFramesAsync(clip, frames, cancellation);
+                int frames = GetRecordedFrames();
+                if (frames - sentFrames >= sampleRate / 5)
+                    await SendFramesAsync(frames, sampleRate, channels, cancellation);
                 await Task.Delay(60, cancellation);
             }
         }
@@ -350,27 +413,47 @@ public sealed class MicrophoneCapture : MonoBehaviour
         }));
     }
 
-    private int GetRecordedFrames(AudioClip clip)
+    private int GetRecordedFrames()
     {
-        int position = Microphone.GetPosition(activeDevice);
-        if (!Microphone.IsRecording(activeDevice) &&
-            Time.unscaledTime - recordingStartedAt >= maximumRecordingSeconds - 0.1f)
-            position = clip.samples;
-        observedFrames = Mathf.Clamp(Mathf.Max(observedFrames, position), 0, clip.samples);
+        if (!isRecording) return observedFrames;
+        if (microphoneClip == null || !Microphone.IsRecording(activeDevice))
+            throw new InvalidOperationException("The microphone was disconnected or stopped.");
+        CaptureMicrophoneFrames(Microphone.GetPosition(activeDevice), Time.unscaledTime);
         return observedFrames;
     }
 
-    private async Task SendFramesAsync(AudioClip clip, int endFrame, CancellationToken cancellation)
+    private void CaptureMicrophoneFrames(int position, float now)
+    {
+        if (position < 0 || position >= microphoneClip.samples)
+            throw new InvalidOperationException("The microphone returned an invalid audio position.");
+        if (now - lastCaptureTime >= (float)microphoneClip.samples / microphoneClip.frequency)
+            throw new InvalidOperationException("Microphone audio could not be read in time. Please repeat this turn.");
+        lastCaptureTime = now;
+        int channels = microphoneClip.channels;
+        int available = (position - recordingReadPosition + microphoneClip.samples) % microphoneClip.samples;
+        int remaining = Mathf.Min(available, recordingSamples.Length / channels - observedFrames);
+        while (remaining > 0)
+        {
+            int frames = Mathf.Min(remaining, microphoneReadBuffer.Length / channels);
+            if (!microphoneClip.GetData(microphoneReadBuffer, recordingReadPosition))
+                throw new InvalidOperationException("Unity could not read microphone samples.");
+            Array.Copy(microphoneReadBuffer, 0, recordingSamples, observedFrames * channels, frames * channels);
+            recordingReadPosition = (recordingReadPosition + frames) % microphoneClip.samples;
+            observedFrames += frames;
+            remaining -= frames;
+        }
+    }
+
+    private async Task SendFramesAsync(int endFrame, int sampleRate, int channels, CancellationToken cancellation)
     {
         while (sentFrames < endFrame)
         {
             cancellation.ThrowIfCancellationRequested();
             EnsureConnected();
-            int frames = Mathf.Min(endFrame - sentFrames, clip.frequency / 4);
-            float[] samples = new float[frames * clip.channels];
-            if (!clip.GetData(samples, sentFrames))
-                throw new InvalidOperationException("Unity could not read microphone samples.");
-            await backendConnection.SendBinaryAsync(ConvertToMonoPcm16(samples, clip.channels));
+            int frames = Mathf.Min(endFrame - sentFrames, sampleRate / 4);
+            float[] samples = new float[frames * channels];
+            Array.Copy(recordingSamples, sentFrames * channels, samples, 0, samples.Length);
+            await backendConnection.SendBinaryAsync(ConvertToMonoPcm16(samples, channels));
             sentFrames += frames;
         }
     }
@@ -490,12 +573,10 @@ public sealed class MicrophoneCapture : MonoBehaviour
     {
         // A released recording is already being finalized; do not dispose its
         // clip/token from a second caller while the async send is still running.
-        if (!isRecording || recordingClip == null) return;
+        if (!isRecording) return;
         isRecording = false;
         isSending = true;
-        Microphone.End(activeDevice);
         recordingCancellation?.Cancel();
-        AudioClip cancelledClip = recordingClip;
         try
         {
             await recordingStreamTask;
@@ -505,10 +586,7 @@ public sealed class MicrophoneCapture : MonoBehaviour
         {
             recordingCancellation?.Dispose();
             recordingCancellation = null;
-            recordingClip = null;
-            activeDevice = null;
             isSending = false;
-            Destroy(cancelledClip);
         }
     }
 
@@ -517,5 +595,8 @@ public sealed class MicrophoneCapture : MonoBehaviour
         pushToTalkHeld = false;
         recordingCancellation?.Cancel();
         CancelActiveRecording();
+        StopAllCoroutines();
+        preparingMicrophone = false;
+        ReleaseMicrophone();
     }
 }

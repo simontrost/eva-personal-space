@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Runtime vector shapes keep the controls sharp at any Canvas scale.
 [AddComponentMenu("")]
 [RequireComponent(typeof(RectTransform), typeof(CanvasRenderer))]
 public sealed class EVASelectionPreviewIcon : MaskableGraphic

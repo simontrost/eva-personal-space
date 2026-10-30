@@ -45,8 +45,6 @@ public sealed class StreamingAudioPlayer : MonoBehaviour
 
     private double expectedPlaybackEndDspTime;
 
-    public bool IsPlayingResponse =>
-        playbackStarted && audioSource != null;
 
     public bool HasActiveResponse =>
         streamActive
@@ -646,15 +644,6 @@ public sealed class StreamingAudioPlayer : MonoBehaviour
         return Volatile.Read(ref queuedSampleValueCount);
     }
 
-    private int GetQueuedFrameCount()
-    {
-        if (currentChannels <= 0)
-        {
-            return 0;
-        }
-
-        return GetQueuedSampleValueCount() / currentChannels;
-    }
 
     private float GetBufferedSeconds()
     {
